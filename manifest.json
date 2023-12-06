@@ -1,0 +1,18 @@
+{
+    "manifest_version": 3,
+    "name": "BetterHummus",
+    "version": "1.0",
+    "description": "CHROME EDITION - noia.site / nilenta",
+    "permissions": ["activeTab"],
+    "minimum_chrome_version": "101",
+    "content_scripts": [
+      {
+        "matches": ["*://hummus.sys42.net/*"],
+        "js": ["betterhummus.js"]
+      }
+    ],
+    "web_accessible_resources": [{
+        "resources": ["3f86729896ed9c76b98a.js", "8c3ff237e4512102354c.js", "bootloader.js", "jquery.js", "betterhummus.css"],
+        "matches": ["<all_urls>"]
+    }]
+  }
