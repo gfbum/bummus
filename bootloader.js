@@ -12,7 +12,14 @@ window.BHApi = {
         }
     },
     InjectCSS: function(id, css) {
-        
+        var styleElement = document.createElement('style');
+
+        styleElement.type = 'text/css';
+        styleElement.id = id;
+
+        styleElement.appendChild(document.createTextNode(css));
+
+        document.head.appendChild(styleElement);
     },
     Toast: function (header, message, fadeOut = 300) {
         var toast_thing = $('<div>', {
@@ -28,7 +35,7 @@ window.BHApi = {
         toast_thing.fadeOut(fadeOut);
     },
     WaitForSelector: function(selector, callback, oneoff = false, timeout = 100) {
-        var intervalId = setInterval(function() {
+        var intervalId = setInterval(function() {   
             if ($(selector).length > 0) {
               if (oneoff) { clearInterval(intervalId); }
               callback();
@@ -186,6 +193,26 @@ window.BHApi = {
             console.log(error);
         }
     },
+    LoadTheme: function(url) {
+        try {
+            fetch(url).then(function (response) {
+                return response.text();
+            }).then(function (data) {
+                if (document.querySelector(`#custom-theme`)) {
+                    window.BHApi.ClearCSS('#custom-theme');
+                }
+
+                window.BHApi.InjectCSS('custom-theme', data);
+            }).catch(function (error) {
+                console.error(`[BH] Failed to load theme: ${url}`);
+                console.log(error);
+            });
+        }
+        catch(error) {
+            console.error(`[BH] Failed to load theme: ${url}`);
+            console.log(error);
+        }
+    },
     UnloadPlugin: function (id, hard = false) {
         try {
             let plugin = window.BHApi.Plugins.find(x => x.id.toLowerCase() == id.toLowerCase());
@@ -249,15 +276,25 @@ window.BHApi = {
                         }
                         
                         if (window.BHApi.Plugins.length > 0) {
-                            experimentsContent.html(`<div class="control-groups" id="plugins"><div class="control-group"><label>Plugins</label><ul class="checkbox-group">${pluginsHtml}</ul></div></div><div class="control-groups" id="loadplugin"><div class="control-group"><label>Load plugin from URL</label><input type="text" id="pluginURL" style="margin-bottom: 18px;" placeholder="https://betterhummus.com/plugins/example.js"><button type="button" class="btn btn-primary" style="width: 100%;" id="loadplugin-btn">Load</button></div></div>`)
+                            experimentsContent.html(`<div class="control-groups" id="plugins"><div class="control-group"><label>Plugins</label><ul class="checkbox-group">${pluginsHtml}</ul></div></div><div class="control-groups" id="loadplugin"><div class="control-group"><label>Load plugin from URL</label><input type="text" id="pluginURL" style="margin-bottom: 18px;" placeholder="https://betterhummus.com/plugins/example.js"><button type="button" class="btn btn-primary" style="width: 100%;" id="loadplugin-btn">Load</button></div><div class="control-group" style="margin-top: -140px;"><label>Load theme from URL</label><input type="text" id="themeURL" style="margin-bottom: 18px;" placeholder="https://betterhummus.com/themes/example.css"><div style="    width: 100%;    display: flex;    align-content: flex-start;    align-items: flex-start;"><button type="button" class="btn btn-primary" style="width: 50%;margin-bottom: 15px;margin-right: 5px;" id="resettheme-btn">Reset theme to default</button><button type="button" class="btn btn-primary" style="width: 50%;margin-left: 0px;" id="loadtheme-btn">Load</button></div></div></div>`)
                         } else {
-                            experimentsContent.html(`<div class="control-groups" id="plugins"><div class="control-group"><label>Plugins</label><p>No plugins found.</p></div></div><div class="control-group"><label>Load plugin from URL</label><input type="text" id="pluginURL" style="margin-bottom: 18px;" placeholder="https://betterhummus.com/plugins/example.js"><button type="button" class="btn btn-primary" style="width: 100%;" id="loadplugin-btn">Load</button></div></div>`)
+                            experimentsContent.html(`<div class="control-groups" id="plugins"><div class="control-group"><label>Plugins</label><p>No plugins found.</p></div></div><div class="control-group"><label>Load plugin from URL</label><input type="text" id="pluginURL" style="margin-bottom: 18px;" placeholder="https://betterhummus.com/plugins/example.js"><button type="button" class="btn btn-primary" style="width: 100%;" id="loadplugin-btn">Load</button></div><div class="control-group" style="margin-top: -140px;"><label>Load theme from URL</label><input type="text" id="themeURL" style="margin-bottom: 18px;" placeholder="https://betterhummus.com/themes/example.css"><div style="    width: 100%;    display: flex;    align-content: flex-start;    align-items: flex-start;"><button type="button" class="btn btn-primary" style="width: 50%;margin-bottom: 15px;margin-right: 5px;" id="resettheme-btn">Reset theme to default</button><button type="button" class="btn btn-primary" style="width: 50%;margin-left: 0px;" id="loadtheme-btn">Load</button></div></div></div>`)
                         }
 
                         $(`#loadplugin-btn`).on('click', function () {
                             let pluginURL = $("#pluginURL").val();
 
                             window.BHApi.ImportPlugin(pluginURL);
+                        });
+
+                        $(`#resettheme-btn`).on('click', function () {
+                            window.BHApi.ClearCSS('#custom-theme');
+                        });
+
+                        $(`#loadtheme-btn`).on('click', function () {
+                            let themeURL = $("#themeURL").val();
+
+                            window.BHApi.LoadTheme(themeURL);
                         });
                     }, true, 1);
                 });
