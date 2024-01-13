@@ -241,6 +241,41 @@ window.BHApi = {
 
         window.BHApi.Toast(`BetterHummus ${window.BHStrings.CurrentVersion}`, "Loaded", 5000);
 
+        /*
+        window.BHApi.WaitForSelector(`div[class*="btn-friends"]`, function () {
+            if (!document.querySelector(".betterhummus-marketplace")) {
+                let sidebutton = $(`<div class="channel betterhummus-marketplace"><div>BetterHummus</div></div>`);
+
+                sidebutton.insertBefore(`div[class="scroller"] > span > header`);
+
+                $(".betterhummus-marketplace").on('click', function () {
+                    for (var channel of $(".channel")) {
+                        let elem = $(channel);
+                        let klass = elem.attr('class');
+                    
+                        if (klass && klass.includes("selected")) {
+                            elem.removeClass('selected');
+                        }
+                    }
+
+                    $(".betterhummus-marketplace").addClass('selected');
+
+                    $(".content").remove();
+
+                    $("#friends").remove();
+
+                    let mp = $(`<div id="friends"><div class="friends-header"><div class="tab-bar UNIQUE"><div class="tab-bar-item selected">3 Plugins</div><div class="tab-bar-item">4 Themes</div></div></div><div class="friends-table"><div class="friends-table-header"><div class="friends-column friends-column-name">Name</div><div class="friends-column-separator"></div><div class="friends-column friends-column-status">Author</div><div class="friends-column-separator"></div><div class="friends-column friends-column-guilds">Version</div></div><div class="scroller-wrap"><div class="scroller friends-table-body"></div></div></div></div>`);
+
+                    mp.insertAfter(".flex-vertical .channels-wrap");
+                });
+
+                $(".btn-friends").on('click', function () {
+                    $(".betterhummus-marketplace").removeClass('selected');
+                });
+            }
+        });
+        */
+
         window.BHApi.WaitForSelector(`form[class="form settings user-settings-modal"]`, function () {
             if (!document.querySelector(".betterhummus-management")) {
                 window.BHApi.Plugins.forEach(_ => _ && _.enabled && _.OnSettingsOpen && _.OnSettingsOpen());
