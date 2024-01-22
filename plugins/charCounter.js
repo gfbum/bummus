@@ -4,16 +4,27 @@
         this.id = "charcounter";
         this.version = "v1.0.2";
         this.author = "Jiiks, square";
+        this.switchObserver = null;
     }
     Load() {
         this.InjectCSS();
-        this.Inject();
+
+        var ta = $(".content textarea").parent();
+
+        if( !ta.length || $("#charcounter").length ) return;
+
+        ta.append( $("<span/>", { 'id': 'charcounter', 'text': `${$(".content textarea").val().length}/4000` }));
+
+        $(".content textarea").off("keyup.charcounter").on("keyup.charCounter", e =>
+          $("#charcounter").text(`${e.target.value.length}/4000`)
+        );
+
         this.InitObserver();
     }
     Unload() {
       $(".content textarea").off("keyup.charcounter");
       window.BHApi.ClearCSS("charCounter");
-      switchObserver.disconnect();
+      this.switchObserver.disconnect();
     }
     InjectCSS() {
         window.BHApi.ClearCSS("charCounter");
@@ -28,30 +39,29 @@
             opacity: .5;
         }`);
     }
-    Inject() {
-        var ta = $(".content textarea").parent();
-
-        if( !ta.length || $("#charcounter").length ) return;
-
-        ta.append( $("<span/>", { 'id': 'charcounter', 'text': `${$(".content textarea").val().length}/4000` }));
-
-        $(".content textarea").off("keyup.charcounter").on("keyup.charCounter", e =>
-          $("#charcounter").text(`${e.target.value.length}/4000`)
-        );
-    }
     InitObserver() {
         var target;
         
-        switchObserver = new MutationObserver(function(mutations) {
-            if(some.call(mutations, function({addedNodes}) {
-                return some.call(addedNodes, function(node) {
-                return node.classList != null && (node.classList.contains("chat") || node.classList.contains("messages-wrapper"));
+        this.switchObserver = new MutationObserver(function(mutations) {
+            if(Array.prototype.some.call(mutations, function({addedNodes}) {
+                return Array.prototype.some.call(addedNodes, function(node) {
+                    return node.classList != null && (node.classList.contains("chat") || node.classList.contains("messages-wrapper"));
                 });
-            })) inject();
+            }));
+
+            var ta = $(".content textarea").parent();
+
+            if( !ta.length || $("#charcounter").length ) return;
+    
+            ta.append( $("<span/>", { 'id': 'charcounter', 'text': `${$(".content textarea").val().length}/4000` }));
+    
+            $(".content textarea").off("keyup.charcounter").on("keyup.charCounter", e =>
+              $("#charcounter").text(`${e.target.value.length}/4000`)
+            );
         });
 
         if ((target = document.querySelector("#friends, .chat, .activityFeed-HeiGwL")) != null) {
-            switchObserver.observe(target.parentNode, {childList: true, subtree: true});
+            this.switchObserver.observe(target.parentNode, {childList: true, subtree: true});
         }
     }
 })

@@ -1,10 +1,9 @@
 window.BHStrings = {
-    CurrentVersion: "V1.2"
+    CurrentVersion: "V1.3"
 };
 
 window.BHApi = {
     Plugins: [],
-    CachedExports: [],
     WpRequire: null,
     ClearCSS: function(id) {
         if (document.querySelector(id)) {
@@ -42,7 +41,35 @@ window.BHApi = {
             }
         }, timeout);
     },
+    SavePluginsLocally: function () {
+        let plugin_urls = [];
+
+        for(var plugin of window.BHApi.Plugins) {
+            plugin_urls.push(plugin.origin);
+        }
+
+        $.cookie('bh_plugins', btoa(JSON.stringify(plugin_urls)));
+    },
+    LoadPluginsLocally: function() {
+        try {
+            let plugins = $.cookie('bh_plugins');
+
+            if (plugins) {
+                let raw_plugin_urls = atob(plugins);
+                let plugin_urls = JSON.parse(raw_plugin_urls);
+    
+                for(var plugin_url of plugin_urls) {
+                    window.BHApi.ImportPlugin(plugin_url);
+                }
+            }
+        }
+        catch (err){
+            console.log(err);
+            console.error("[BH] Failed to load plugins from plugin depot :/");
+        }
+    },
     SetupWebpackShit: function() {
+        // full credits to alyxia (github.com/lexisother) for this, love you
         let wpRequire = webpackJsonp([], [(module, exports, require) => { module.exports = require }])
 
         const filterModules = (modules, single = false) => (filter) => {
@@ -144,6 +171,8 @@ window.BHApi = {
                 const Plugin = eval(data);
                 const Instance = new Plugin();
 
+                Instance.origin = url; //im autistic
+
                 let alreadyImported = window.BHApi.Plugins.find(x => x.id == Instance.id);
 
                 if (alreadyImported) {
@@ -158,6 +187,8 @@ window.BHApi = {
                 }
 
                 window.BHApi.Plugins.push(Instance);
+                
+                window.BHApi.SavePluginsLocally();
 
                 window.BHApi.LoadPlugin(Instance.id);
             }).catch(function (error) {
@@ -183,6 +214,8 @@ window.BHApi = {
             plugin.enabled = true;
 
             plugin.Load();
+
+            window.BHApi.SavePluginsLocally();
 
             console.log(`[BH] Loaded plugin: ${plugin.name} (ID: ${plugin.id}) by ${plugin.author} ${plugin.version}`);
 
@@ -230,6 +263,8 @@ window.BHApi = {
             if (hard) {
                 window.BHApi.Plugins.splice(window.BHApi.Plugins.indexOf(plugin), 1);
             }
+
+            window.BHApi.SavePluginsLocally();
         }
         catch(error) {
             console.error(`[BH] Failed to unload plugin ID: ${id}`);
@@ -241,76 +276,46 @@ window.BHApi = {
 
         window.BHApi.Toast(`BetterHummus ${window.BHStrings.CurrentVersion}`, "Loaded", 5000);
 
-        /*
-        window.BHApi.WaitForSelector(`div[class*="btn-friends"]`, function () {
-            if (!document.querySelector(".betterhummus-marketplace")) {
-                let sidebutton = $(`<div class="channel betterhummus-marketplace"><div>BetterHummus</div></div>`);
-
-                sidebutton.insertBefore(`div[class="scroller"] > span > header`);
-
-                $(".betterhummus-marketplace").on('click', function () {
-                    for (var channel of $(".channel")) {
-                        let elem = $(channel);
-                        let klass = elem.attr('class');
-                    
-                        if (klass && klass.includes("selected")) {
-                            elem.removeClass('selected');
-                        }
-                    }
-
-                    $(".betterhummus-marketplace").addClass('selected');
-
-                    $(".content").remove();
-
-                    $("#friends").remove();
-
-                    let mp = $(`<div id="friends"><div class="friends-header"><div class="tab-bar UNIQUE"><div class="tab-bar-item selected">3 Plugins</div><div class="tab-bar-item">4 Themes</div></div></div><div class="friends-table"><div class="friends-table-header"><div class="friends-column friends-column-name">Name</div><div class="friends-column-separator"></div><div class="friends-column friends-column-status">Author</div><div class="friends-column-separator"></div><div class="friends-column friends-column-guilds">Version</div></div><div class="scroller-wrap"><div class="scroller friends-table-body"></div></div></div></div>`);
-
-                    mp.insertAfter(".flex-vertical .channels-wrap");
-                });
-
-                $(".btn-friends").on('click', function () {
-                    $(".betterhummus-marketplace").removeClass('selected');
-                });
-            }
-        });
-        */
+        window.BHApi.LoadPluginsLocally();
 
         function renderBrowsePlugins() {
-            let experimentsContent = $("#app-mount > div > div:nth-child(6) > div.modal > div > form > div.settings-right > div.settings-inner > div > div");
-            let official_plugins = [{
-                id: "byebyechangelog",
-                name: "Bye Bye Changelog",
-                version: "v1.0",
-                author: "noia.site",
-                direct_url: "https://i-love.nekos.zip/zJCfBbSeEo.js"
-            }];
-            let pluginAmount = official_plugins.length;
+            $("#app-mount > div > div:nth-child(6) > div.modal > div > form > div.settings-right > div.settings-inner > div > div").html(`<h1>Fetching official betterhummus plugins, please wait..</h1>`)
+            
+            fetch('https://api.celestial.host/bh/plugins').then(function (response) {
+                return response.json();
+            }).then(function (data) {
+                let experimentsContent = $("#app-mount > div > div:nth-child(6) > div.modal > div > form > div.settings-right > div.settings-inner > div > div");
+                let official_plugins = data;
+                let pluginAmount = official_plugins.length;
 
-            let official_pluginsHtml = ``;
+                let official_pluginsHtml = ``;
 
-            for(var plugin of official_plugins) {
-                official_pluginsHtml += `<div class="official-plugin" id="plugin-${plugin.id}"><h1>${plugin.name} (${plugin.version}) by <span>${plugin.author}</span></h1><button id="install-plugin-${plugin.id}" type="button">${window.BHApi.Plugins.find(x => x.id == plugin.id) ? "Uninstall" : "Install"}</button></div>`
-            }
+                for(var plugin of official_plugins) {
+                    official_pluginsHtml += `<div class="official-plugin" id="plugin-${plugin.id}"><h1>${plugin.name} (${plugin.version}) by <span>${plugin.author}</span></h1><button id="install-plugin-${plugin.id}" type="button">${window.BHApi.Plugins.find(x => x.id == plugin.id) ? "Uninstall" : "Install"}</button></div>`
+                }
 
-            experimentsContent.html(`<div class="control-groups" id="plugins"><div class="control-group"><button type="button" class="btn btn-primary" style="margin-bottom: 15px;margin-right: 5px;" id="backtobh-btn">⬅️ Back</button><label style="margin-bottom: 5px;">${pluginAmount} Plugin(s)</label><div id="official-plugins">${official_pluginsHtml}</div></div></div>`)
+                experimentsContent.html(`<div class="control-groups" id="plugins"><div class="control-group"><button type="button" class="btn btn-primary" style="margin-bottom: 15px;margin-right: 5px;" id="backtobh-btn">⬅️ Back</button><label style="margin-bottom: 5px;">${pluginAmount} Plugin(s)</label><div id="official-plugins">${official_pluginsHtml}</div></div></div>`)
 
-            $(`#backtobh-btn`).on('click', function () {
-                renderBetterHummusPage();
-            });
-
-            for(var pluginz of official_plugins) {
-                $(`#install-plugin-${pluginz.id}`).on('click', function () {
-                    let installed = window.BHApi.Plugins.find(x => x.id == plugin.id);
-
-                    if (installed) {
-                        window.BHApi.UnloadPlugin(plugin.id, true);
-                        return;
-                    }
-
-                    window.BHApi.ImportPlugin(pluginz.direct_url);
+                $(`#backtobh-btn`).on('click', function () {
+                    renderBetterHummusPage();
                 });
-            }
+
+                for(var pluginz of official_plugins) {
+                    $(`#install-plugin-${pluginz.id}`).on('click', function () {
+                        let installed = window.BHApi.Plugins.find(x => x.id == plugin.id);
+
+                        if (installed) {
+                            window.BHApi.UnloadPlugin(plugin.id, true);
+                            return;
+                        }
+
+                        window.BHApi.ImportPlugin(pluginz.js_url);
+                    });
+                }
+            }).catch(function (error) {
+                console.error(`[BH] Failed to load theme: ${url}`);
+                console.log(error);
+            });
         }
 
         function renderBetterHummusPage() {
@@ -328,6 +333,8 @@ window.BHApi = {
                         plugin.enabled ? window.BHApi.LoadPlugin(plugin.id, true) : window.BHApi.UnloadPlugin(plugin.id);
 
                         plugin.enabled ? $(`#${plugin.id}`).attr("checked", "") : $(`#${plugin.id}`).removeAttr("checked");
+
+                        window.BHApi.SavePluginsLocally();
                     });
                 }, true, 10);
             }
@@ -341,7 +348,7 @@ window.BHApi = {
               </div>
               <div class="control-group">
                 <label>Load plugin from URL</label>
-                <input type="text" id="pluginURL" style="margin-bottom: 18px;" placeholder="https://betterhummus.com/plugins/example.js">
+                <input type="text" id="pluginURL" style="margin-bottom: 18px;" placeholder="https://example.com/plugins/example.js">
                 <div style="width: 100%; display: flex; align-content: flex-start;    align-items: flex-start;">
                   <button type="button" class="btn btn-primary" style="width: 50%;margin-bottom: 15px;margin-right: 5px;" id="browseplugins-btn">Browse Official Plugins</button>
                   <button type="button" class="btn btn-primary" style="width: 50%;margin-left: 0px;" id="loadplugin-btn">Load</button>
@@ -349,7 +356,7 @@ window.BHApi = {
               </div>
               <div class="control-group" style="margin-top: -140px;">
                 <label>Load theme from URL</label>
-                <input type="text" id="themeURL" style="margin-bottom: 18px;" placeholder="https://betterhummus.com/themes/example.css">
+                <input type="text" id="themeURL" style="margin-bottom: 18px;" placeholder="https://example.com/themes/example.css">
                 <div style="    width: 100%;    display: flex;    align-content: flex-start;    align-items: flex-start;">
                   <button type="button" class="btn btn-primary" style="width: 50%;margin-bottom: 15px;margin-right: 5px;" id="resettheme-btn">Reset theme to default</button>
                   <button type="button" class="btn btn-primary" style="width: 50%;margin-left: 0px;" id="loadtheme-btn">Load</button>
@@ -364,7 +371,7 @@ window.BHApi = {
               </div>
               <div class="control-group">
                 <label>Load plugin from URL</label>
-                <input type="text" id="pluginURL" style="margin-bottom: 18px;" placeholder="https://betterhummus.com/plugins/example.js">
+                <input type="text" id="pluginURL" style="margin-bottom: 18px;" placeholder="https://example.com/plugins/example.js">
                 <div style="width: 100%; display: flex; align-content: flex-start; align-items: flex-start;">
                   <button type="button" class="btn btn-primary" style="width: 50%;margin-bottom: 15px;margin-right: 5px;" id="browseplugins-btn">Browse Official Plugins</button>
                   <button type="button" class="btn btn-primary" style="width: 50%;margin-left: 0px;" id="loadplugin-btn">Load</button>
@@ -372,7 +379,7 @@ window.BHApi = {
               </div>
               <div class="control-group" style="margin-top: -140px;">
                 <label>Load theme from URL</label>
-                <input type="text" id="themeURL" style="margin-bottom: 18px;" placeholder="https://betterhummus.com/themes/example.css">
+                <input type="text" id="themeURL" style="margin-bottom: 18px;" placeholder="https://example.com/themes/example.css">
                 <div style="    width: 100%;display: flex;    align-content: flex-start;    align-items: flex-start;">
                   <button type="button" class="btn btn-primary" style="width: 50%;margin-bottom: 15px;margin-right: 5px;" id="resettheme-btn">Reset theme to default</button>
                   <button type="button" class="btn btn-primary" style="width: 50%;margin-left: 0px;" id="loadtheme-btn">Load</button>
