@@ -3,7 +3,7 @@
     "name": "BetterHummus",
     "version": "1.3",
     "description": "CHROME EDITION - noia.site / nilenta",
-    "permissions": ["activeTab", "storage"],
+    "permissions": ["activeTab"],
     "minimum_chrome_version": "101",
     "content_scripts": [
       {
