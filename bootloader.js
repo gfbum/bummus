@@ -354,7 +354,7 @@ window.BHApi = {
                   <button type="button" class="btn btn-primary" style="width: 50%;margin-left: 0px;" id="loadplugin-btn">Load</button>
                 </div>
               </div>
-              <div class="control-group" style="margin-top: -140px;">
+              <div class="control-group">
                 <label>Load theme from URL</label>
                 <input type="text" id="themeURL" style="margin-bottom: 18px;" placeholder="https://example.com/themes/example.css">
                 <div style="    width: 100%;    display: flex;    align-content: flex-start;    align-items: flex-start;">
@@ -377,7 +377,7 @@ window.BHApi = {
                   <button type="button" class="btn btn-primary" style="width: 50%;margin-left: 0px;" id="loadplugin-btn">Load</button>
                 </div>
               </div>
-              <div class="control-group" style="margin-top: -140px;">
+              <div class="control-group">
                 <label>Load theme from URL</label>
                 <input type="text" id="themeURL" style="margin-bottom: 18px;" placeholder="https://example.com/themes/example.css">
                 <div style="    width: 100%;display: flex;    align-content: flex-start;    align-items: flex-start;">
