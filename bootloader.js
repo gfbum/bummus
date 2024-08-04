@@ -327,6 +327,14 @@ window.BHApi = {
                   <button type="button" class="btn btn-primary" style="width: 50%;margin-left: 0px;" id="loadtheme-btn">Load</button>
                 </div>
               </div>
+              <div class="control-group">
+                <label>Danger Zone</label>
+                <div class="account-warning" style="margin-top: 10px;   margin-bottom: 10px;"><h3>Resetting your plugins will REMOVE ALL OF THEM! Please only reset if there is an issue with the extension!!! </h3></div>
+                <div style="    width: 100%;display: flex;    align-content: flex-start;    align-items: flex-start;">
+                    <button type="button" class="btn btn-primary" style="width: 50%;margin-bottom: 15px;margin-right: 5px;" id="resetplugins-btn">Reset all plugins</button>
+                    <button type="button" class="btn btn-primary" style="width: 50%;margin-left: 0px;" id="click-btn">Pull my finger</button>
+                </div>
+              </div>
               </div>`);
 
             $(`#loadplugin-btn`).on('click', function () {
@@ -338,6 +346,15 @@ window.BHApi = {
             $(`#resettheme-btn`).on('click', function () {
                 window.BHApi.ClearCSS('#custom-theme');
             });
+
+            $(`#resetplugins-btn`).on('click', function () {
+               $.removeCookie('bh_plugins', { path: '/' });
+               location.reload();
+            });
+
+            $(`#click-btn`).on('click', function () {
+                window.location.href = 'https://soundcloud.com/iloveallmydogs/taylen-prod-yan';
+             });
 
             $(`#loadtheme-btn`).on('click', function () {
                 let themeURL = $("#themeURL").val();
