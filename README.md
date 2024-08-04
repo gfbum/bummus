@@ -4,4 +4,7 @@ a ##getforkedbum exclusive
 
 # Changes
 
-literally nothing I just wanted to fix that uglass margin fix
+NOTHING MAJOR. AT ALL
+
+- Made betterhummus page a little lighter with a function that would make u cry because of how ass it is 
+- Removed official plugin browser because they boomed the api that does that (rip)

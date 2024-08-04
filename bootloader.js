@@ -282,21 +282,28 @@ window.BHApi = {
             let experimentsContent = $("#app-mount > div > div:nth-child(6) > div.modal > div > form > div.settings-right > div.settings-inner > div > div");
             let pluginsHtml = ``;
 
-            for (var plugin of window.BHApi.Plugins) {
-                pluginsHtml += `<li><div class="checkbox" id="plugin-control-${plugin.id}"><div class="checkbox-inner"><input type="checkbox" value="on" ${plugin.enabled ? 'checked=""' : ''} id="${plugin.id}"><span></span></div><span>${plugin.name}</span>
-                            </div></li>`;
-
-                window.BHApi.WaitForSelector(`#plugin-control-${plugin.id}`, () => {
-                    $(`#plugin-control-${plugin.id}`).on('click', function () {
-                        plugin.enabled = !plugin.enabled;
-
-                        plugin.enabled ? window.BHApi.LoadPlugin(plugin.id, true) : window.BHApi.UnloadPlugin(plugin.id);
-
-                        plugin.enabled ? $(`#${plugin.id}`).attr("checked", "") : $(`#${plugin.id}`).removeAttr("checked");
-
-                        window.BHApi.SavePluginsLocally();
-                    });
-                }, true, 10);
+            function pluginCheck() {
+                if (window.BHApi.Plugins.length > 0) {
+                    for (var plugin of window.BHApi.Plugins) {
+                        pluginsHtml += `<div class="checkbox" id="plugin-control-${plugin.id}"><div class="checkbox-inner"><input type="checkbox" value="on" ${plugin.enabled ? 'checked=""' : ''} id="${plugin.id}"><span></span></div><span>${plugin.name}</span>
+                                    </div>`;
+            
+                        window.BHApi.WaitForSelector(`#plugin-control-${plugin.id}`, () => {
+                            $(`#plugin-control-${plugin.id}`).on('click', function () {
+                                plugin.enabled = !plugin.enabled;
+            
+                                plugin.enabled ? window.BHApi.LoadPlugin(plugin.id, true) : window.BHApi.UnloadPlugin(plugin.id);
+            
+                                plugin.enabled ? $(`#${plugin.id}`).attr("checked", "") : $(`#${plugin.id}`).removeAttr("checked");
+            
+                                window.BHApi.SavePluginsLocally();
+                            });
+                        }, true, 10);
+                    }
+                    return `${pluginsHtml}`
+                } else {
+                    return `No plugins found.`
+                }
             }
 
             experimentsContent.html(`<div class="control-groups" id="plugins">
@@ -362,21 +369,15 @@ window.BHApi = {
     }
 }
 
-function pluginCheck() {
-    if (window.BHApi.Plugins.length > 0) {
-        return `${pluginsHtml}`
-    } else {
-        return `No plugins found.`
-    }
-}
 
 window.addEventListener("devtoolschange", () => {
     console.clear();
 
-    console.log("%c" + `BetterHummus (${window.BHStrings.CurrentVersion})`, "color: #7289DA; -webkit-text-stroke: 2px black; font-size: 72px; font-weight: bold;"),
-    console.log("%c" + "bla bla dont paste code u dont know what it does in here", "font-size: 16px;"),
-    console.log("%c" + "pew pew", "font-size: 18px; font-weight: bold; color: red;"),
-    console.log("%c" + "check out the official server here: https://hummus.sys42.net/invite/Xnamt3u", "font-size: 16px;")
+    console.log("%c" + `###BUMMUS (${window.BHStrings.CurrentVersion})`, "color: #7289DA; -webkit-text-stroke: 2px black; font-size: 72px; font-weight: bold;"),
+    console.log("%c" + "##getforkedbum exclusive", "font-size: 18px; font-weight: bold; color: red;"),
+    console.log("%c" + "Dont paste code in here if u dont know what it does. Idk if u value ur hummus account that much but i wouldnt recommend", "font-size: 16px;"),
+    console.log("%c" + "BetterHummus server here: https://hummus.sys42.net/invite/Xnamt3u", "font-size: 16px;")
+    console.log("%c" + "#bummus #getforkedbum server here: https://hummus.sys42.net/invite/6UeHV5q", "font-size: 16px;")
 })
 
 console.clear();
